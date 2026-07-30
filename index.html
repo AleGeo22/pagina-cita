@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿Quieres una cita conmigo?</title>
+  <style>
+    :root {
+      --bg: #050714;
+      --panel: rgba(14, 18, 40, 0.82);
+      --panel-2: rgba(25, 31, 65, 0.75);
+      --text: #f8f8ff;
+      --muted: #aeb4d0;
+      --purple: #7657ff;
+      --purple-2: #a66cff;
+      --green: #53e38f;
+      --border: rgba(157, 139, 255, 0.24);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 50% 15%, rgba(105, 75, 255, 0.22), transparent 34%),
+        radial-gradient(circle at 80% 80%, rgba(117, 68, 255, 0.12), transparent 30%),
+        var(--bg);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image: linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 80%);
+    }
+
+    .app {
+      width: min(94%, 470px);
+      min-height: 100vh;
+      margin: auto;
+      display: grid;
+      place-items: center;
+      padding: 28px 0;
+      position: relative;
+    }
+
+    .screen {
+      width: 100%;
+      display: none;
+      text-align: center;
+      animation: appear .55s ease both;
+    }
+
+    .screen.active { display: block; }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(18px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .photos {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      margin-bottom: 20px;
+    }
+
+    .photo {
+      width: 112px;
+      aspect-ratio: 1;
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      font-size: 58px;
+      background: linear-gradient(145deg, #1e2855, #5133a8);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 0 32px rgba(119, 87, 255, .35);
+      overflow: hidden;
+    }
+
+    .photo img { width: 100%; height: 100%; object-fit: cover; }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #c7c0ff;
+      letter-spacing: .18em;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1, h2, p { margin-top: 0; }
+
+    h1 {
+      font-size: clamp(42px, 12vw, 62px);
+      line-height: .95;
+      margin-bottom: 16px;
+      letter-spacing: -0.045em;
+    }
+
+    h1 span, .price span {
+      background: linear-gradient(90deg, #ffffff 30%, #aa86ff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      max-width: 340px;
+      margin: 0 auto 28px;
+      line-height: 1.55;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+      position: relative;
+      min-height: 140px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 15px;
+      padding: 16px 20px;
+      color: white;
+      font: inherit;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+    }
+
+    button:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+    .primary {
+      background: linear-gradient(90deg, var(--purple), var(--purple-2));
+      box-shadow: 0 12px 34px rgba(116, 80, 255, .38), inset 0 1px rgba(255,255,255,.25);
+    }
+
+    #yesBtn { padding: 12px 20px; align-self: start; }
+
+    .secondary {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.18);
+      color: #c7cbe0;
+    }
+
+    #noBtn {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      transition: left .18s ease, top .18s ease, transform .2s ease;
+    }
+
+    .avatar {
+      width: 112px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      font-size: 62px;
+      background: #1b2043;
+      border: 2px solid #8265ff;
+      box-shadow: 0 0 30px rgba(117, 87, 255, .38);
+      overflow: hidden;
+    }
+
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    .spinner {
+      width: 40px;
+      aspect-ratio: 1;
+      margin: 0 auto 20px;
+      border: 4px solid rgba(255,255,255,.12);
+      border-top-color: #8b6aff;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .processing h2, .final h2 {
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    .status-box, .benefits, .demo-box {
+      margin-top: 22px;
+      padding: 18px;
+      text-align: left;
+      border-radius: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 50px rgba(0,0,0,.28);
+    }
+
+    .status {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 9px 0;
+      color: #777d9a;
+      transition: color .25s ease;
+    }
+
+    .status.done { color: #d9dded; }
+    .status.done .icon { color: var(--green); }
+    .status.current { color: white; }
+    .status.current .icon { color: #9c86ff; }
+
+    .final {
+      padding: 24px 0;
+    }
+
+    .lock { font-size: 40px; margin-bottom: 8px; }
+
+    .toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      padding: 6px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      margin: 22px 0;
+    }
+
+    .toggle button {
+      padding: 12px;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .toggle button.selected {
+      color: white;
+      background: linear-gradient(90deg, #654cff, #9665ff);
+      box-shadow: 0 8px 24px rgba(103, 72, 255, .30);
+    }
+
+    .old-price {
+      color: #7d839e;
+      margin-bottom: 0;
+    }
+
+    .price {
+      font-size: 62px;
+      font-weight: 900;
+      letter-spacing: -0.055em;
+      margin: -4px 0 2px;
+    }
+
+    .price-note { color: var(--muted); }
+
+    .card-brands {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 8px 0 14px;
+    }
+
+    .card-brand {
+      min-width: 64px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      color: #f6f7ff;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.14);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .02em;
+      box-shadow: inset 0 1px rgba(255,255,255,.08);
+    }
+
+    .card-brand.visa { color: #9eb7ff; font-style: italic; font-size: 14px; }
+    .card-brand.mastercard { color: #ffb36b; }
+    .card-brand.amex { color: #75d5ff; }
+    .card-brand.diners { color: #b7c7ff; }
+
+    .benefits {
+      list-style: none;
+      padding: 16px 18px;
+    }
+
+    .benefits li {
+      padding: 8px 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .benefits li::before { content: "✓"; color: var(--green); font-weight: 900; }
+
+    .demo-box small {
+      color: #ffcb75;
+      display: block;
+      line-height: 1.5;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .fake-input {
+      min-height: 48px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      color: #737991;
+      background: rgba(3,5,14,.38);
+      width: 100%;
+      font: inherit;
+      outline: none;
+    }
+
+    .fake-input.full { grid-column: 1 / -1; }
+    .fake-input:focus { border-color: #8265ff; box-shadow: 0 0 0 3px rgba(130,101,255,.14); color: white; }
+    .fake-input::placeholder { color: #737991; }
+    .fake-input.invalid {
+      border-color: #ff667d;
+      box-shadow: 0 0 0 3px rgba(255,102,125,.14);
+    }
+
+    .test-card-note {
+      margin: 12px 0 0;
+      color: #9da4c5;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .hug-grid { display: grid; gap: 10px; margin-top: 14px; }
+
+    .hug-option {
+      display: grid;
+      grid-template-columns: 1fr 110px;
+      gap: 12px;
+      align-items: center;
+      color: #dce0f3;
+      font-size: 14px;
+    }
+
+    .hug-option .fake-input { padding: 0 10px; color: #dce0f3; }
+
+    .footer-note {
+      margin: 18px 0 0;
+      color: #777d9a;
+      font-size: 12px;
+    }
+
+    .payment-status {
+      min-height: 24px;
+      margin: 12px 0 0;
+      color: var(--green);
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .payment-status.error { color: #ff8295; }
+
+    .celebration-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 22px;
+      background: rgba(2, 3, 12, .78);
+      backdrop-filter: blur(8px);
+      animation: celebrationFade .35s ease both;
+    }
+
+    .celebration-card {
+      position: relative;
+      width: min(100%, 420px);
+      padding: 42px 28px 28px;
+      overflow: hidden;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 26px;
+      background: linear-gradient(145deg, rgba(25,31,65,.98), rgba(49,30,91,.98));
+      box-shadow: 0 28px 90px rgba(0,0,0,.55), 0 0 50px rgba(137,94,255,.35);
+      animation: celebrationPop .55s cubic-bezier(.2,.9,.25,1.2) both;
+    }
+
+    .celebration-icon { position: relative; z-index: 2; font-size: 64px; animation: iconBounce 1s ease infinite alternate; }
+    .celebration-card h3 { position: relative; z-index: 2; margin: 8px 0 10px; font-size: 30px; }
+    .celebration-card p { position: relative; z-index: 2; color: #d9dcf2; line-height: 1.5; }
+    .celebration-sparkles { font-size: 24px; letter-spacing: 8px; }
+    .celebration-card button { position: relative; z-index: 2; margin-top: 8px; }
+
+    .whatsapp-share {
+      position: relative;
+      z-index: 2;
+      display: block;
+      margin-top: 12px;
+      padding: 14px 18px;
+      border-radius: 15px;
+      color: white;
+      background: linear-gradient(90deg, #16b85c, #25d366);
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 0 10px 28px rgba(37,211,102,.25);
+    }
+
+    .firework {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      animation: fireworkBurst 1.5s ease-out infinite;
+    }
+
+    .firework.one { top: 22%; left: 18%; color: #ff7aa8; }
+    .firework.two { top: 16%; right: 18%; color: #ffd166; animation-delay: .45s; }
+    .firework.three { top: 44%; left: 50%; color: #8f7cff; animation-delay: .9s; }
+
+    .confetti-piece {
+      position: absolute;
+      top: -18px;
+      width: 8px;
+      height: 14px;
+      border-radius: 2px;
+      animation: confettiFall 2.8s linear forwards;
+    }
+
+    @keyframes celebrationFade { from { opacity: 0; } }
+    @keyframes celebrationPop { from { opacity: 0; transform: scale(.72) translateY(28px); } }
+    @keyframes iconBounce { to { transform: translateY(-8px) rotate(5deg); } }
+    @keyframes fireworkBurst {
+      0% { box-shadow: 0 0 0 0 currentColor; opacity: 0; transform: scale(.2); }
+      25% { opacity: 1; }
+      70% { box-shadow: 0 -34px 0 -1px currentColor, 24px -24px 0 -1px currentColor, 34px 0 0 -1px currentColor, 24px 24px 0 -1px currentColor, 0 34px 0 -1px currentColor, -24px 24px 0 -1px currentColor, -34px 0 0 -1px currentColor, -24px -24px 0 -1px currentColor; opacity: 1; transform: scale(1); }
+      100% { box-shadow: 0 -48px 0 -3px currentColor, 34px -34px 0 -3px currentColor, 48px 0 0 -3px currentColor, 34px 34px 0 -3px currentColor, 0 48px 0 -3px currentColor, -34px 34px 0 -3px currentColor, -48px 0 0 -3px currentColor, -34px -34px 0 -3px currentColor; opacity: 0; }
+    }
+    @keyframes confettiFall { to { transform: translateY(115vh) rotate(720deg); opacity: .2; } }
+
+    .hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 10;
+    }
+
+    .heart {
+      position: absolute;
+      bottom: -30px;
+      font-size: 24px;
+      animation: floatUp 2.8s ease-in forwards;
+    }
+
+    @keyframes floatUp {
+      to { transform: translateY(-110vh) rotate(18deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section id="invite" class="screen active">
+      <div class="photos">
+        <div class="photo">
+          <img src="https://media.tenor.com/Xn3TfHpAJiMAAAAM/scuba-cat-scuba.gif" alt="Gato buceando">
+        </div>
+        <div class="photo">
+          <img src="https://media.tenor.com/4yEuW6bbRo0AAAAj/gato.gif" alt="Gato animado">
+        </div>
+      </div>
+      <p class="eyebrow">Do you think about me?</p>
+      <h1>¿Quieres una cita <span>conmigo?</span></h1>
+      <p class="subtitle">Esto puede ser el principio de algo bonito. Prometo una buena conversación y cero reuniones de trabajo.</p>
+
+      <div class="actions" id="actions">
+        <button class="primary" id="yesBtn">Sí 💗</button>
+        <button class="secondary" id="noBtn">No, gracias</button>
+      </div>
+    </section>
+
+    <section id="processing" class="screen processing">
+      <div class="avatar">
+        <img src="https://i.pinimg.com/originals/7a/71/6a/7a716acbccc5e2ca44b2396a33bff865.gif" alt="Gato animado">
+      </div>
+      <div class="spinner"></div>
+      <h2>Procesando...</h2>
+      <p class="subtitle">Analizando la compatibilidad y preparando el mejor plan posible.</p>
+      <div class="status-box">
+        <div class="status" data-step="0"><span class="icon">□</span> Validando compatibilidad...</div>
+        <div class="status" data-step="1"><span class="icon">□</span> Generando plan de cita...</div>
+        <div class="status" data-step="2"><span class="icon">□</span> Reservando un lugar bonito...</div>
+        <div class="status" data-step="3"><span class="icon">□</span> Buscando chistes para enamorar...</div>
+        <div class="status" data-step="4"><span class="icon">□</span> Preparando outfit...</div>
+      </div>
+    </section>
+
+    <section id="final" class="screen final">
+      <div class="lock">🔓</div>
+      <h2>¡Cita desbloqueada!</h2>
+      <p class="subtitle">Elige el plan que prefieras. Esto es solo una broma romántica: no existe ningún cobro real.</p>
+
+      <div class="toggle">
+        <button class="planBtn selected" data-plan="simple">Plan sencillo</button>
+        <button class="planBtn" data-plan="premium">Plan premium</button>
+      </div>
+
+      <p class="old-price" id="oldPrice">MEJOR ESTA EL PLAN PREMIUM 😅🌟</p>
+      <div class="price"><span id="price">S/ 235.00</span></div>
+      <div class="card-brands" id="cardBrands" aria-label="Tarjetas aceptadas">
+        <span class="card-brand visa">VISA</span>
+        <span class="card-brand mastercard">Mastercard</span>
+        <span class="card-brand amex">AMEX</span>
+        <span class="card-brand diners">Diners Club</span>
+      </div>
+      <p class="price-note" id="priceNote">POR MES - CANCELA CUANDO QUIERAS</p>
+
+      <ul class="benefits" id="benefits">
+        <li>Lugar y hora coordinados</li>
+        <li>Conversación ilimitada</li>
+        <li>Postre incluido</li>
+        <li>Fotos bonitas</li>
+      </ul>
+
+      <div class="demo-box" id="cardForm">
+        <strong>Número de tarjeta</strong>
+        <div class="form-grid">
+          <input class="fake-input full" id="cardNumber" type="text" inputmode="numeric" maxlength="19" autocomplete="off" placeholder="Número de tarjeta de prueba" aria-label="Número de tarjeta de prueba">
+          <input class="fake-input" id="cardExpiry" type="text" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="MM / AA" aria-label="Fecha de vencimiento de prueba">
+          <input class="fake-input" id="cardCvc" type="text" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="CVC" aria-label="CVC de prueba">
+          <input class="fake-input full" id="cardName" type="text" maxlength="40" autocomplete="off" placeholder="Nombre de ejemplo" aria-label="Nombre de ejemplo">
+        </div>
+        <p class="test-card-note">Solo es simulación 😅</p>
+      </div>
+
+      <div class="demo-box" id="premiumForm" hidden>
+        <strong>Tipo de abrazo</strong>
+        <div class="hug-grid">
+          <label class="hug-option"><span>Abrazo de oso 🐻</span><select class="fake-input" aria-label="Abrazo de oso"><option value="" selected>Elige</option><option>Sí</option><option>No</option></select></label>
+          <label class="hug-option"><span>Abrazo largo o corto 🫂</span><select class="fake-input" aria-label="Abrazo largo o corto"><option value="" selected>Elige</option><option>Corto</option><option>Largo</option></select></label>
+          <label class="hug-option"><span>Abrazo sorpresa</span><select class="fake-input" aria-label="Abrazo sorpresa"><option value="" selected>Elige</option><option>Sí</option><option>No</option></select></label>
+          <label class="hug-option"><span>Abrazo con beso opcional 🙈</span><select class="fake-input" aria-label="Abrazo con beso opcional"><option value="" selected>Elige</option><option>Sí</option><option>No</option></select></label>
+          <input class="fake-input full" id="otherPayment" type="text" maxlength="80" autocomplete="off" placeholder="Otra forma de pago (opcional)" aria-label="Otra forma de pago">
+        </div>
+        <p class="test-card-note">Personaliza tu abrazo premium 💜</p>
+      </div>
+
+      <button class="primary" id="confirmBtn" style="margin-top:16px">Confirmar pago 💜</button>
+      <p class="payment-status" id="paymentStatus" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <div class="hearts" id="hearts"></div>
+
+  <div class="celebration-overlay" id="celebrationOverlay" hidden>
+    <div class="celebration-card" role="dialog" aria-modal="true" aria-labelledby="celebrationTitle">
+      <div class="firework one"></div>
+      <div class="firework two"></div>
+      <div class="firework three"></div>
+      <div id="confettiLayer"></div>
+      <div class="celebration-icon" id="celebrationIcon">🎉</div>
+      <h3 id="celebrationTitle">¡Todo listo!</h3>
+      <p id="celebrationMessage"></p>
+      <p class="celebration-sparkles">✨💜🎆</p>
+      <a class="whatsapp-share" id="shareWhatsApp" href="#" target="_blank" rel="noopener noreferrer" hidden>Enviar elecciones por WhatsApp 💬</a>
+      <button class="primary" id="closeCelebration" type="button">Seguir celebrando 💜</button>
+    </div>
+  </div>
+
+  <script>
+    const invite = document.getElementById('invite');
+    const processing = document.getElementById('processing');
+    const finalScreen = document.getElementById('final');
+    const yesBtn = document.getElementById('yesBtn');
+    const noBtn = document.getElementById('noBtn');
+    const actions = document.getElementById('actions');
+
+    function showScreen(screen) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      screen.classList.add('active');
+    }
+
+    function moveNoButton() {
+      const area = actions.getBoundingClientRect();
+      const btn = noBtn.getBoundingClientRect();
+      const maxX = Math.max(0, area.width - btn.width);
+      const safeTop = yesBtn.offsetHeight + 12;
+      const maxY = Math.max(safeTop, area.height - btn.height);
+      noBtn.style.left = Math.random() * maxX + 'px';
+      noBtn.style.top = safeTop + Math.random() * (maxY - safeTop) + 'px';
+    }
+
+    noBtn.addEventListener('mouseenter', moveNoButton);
+    noBtn.addEventListener('touchstart', e => {
+      e.preventDefault();
+      moveNoButton();
+    }, { passive: false });
+    noBtn.addEventListener('click', moveNoButton);
+
+    yesBtn.addEventListener('click', async () => {
+      showScreen(processing);
+      const steps = [...document.querySelectorAll('.status')];
+
+      for (let i = 0; i < steps.length; i++) {
+        steps.forEach(s => s.classList.remove('current'));
+        steps[i].classList.add('current');
+        steps[i].querySelector('.icon').textContent = '◌';
+        await new Promise(r => setTimeout(r, 820));
+        steps[i].classList.remove('current');
+        steps[i].classList.add('done');
+        steps[i].querySelector('.icon').textContent = '✓';
+      }
+
+      await new Promise(r => setTimeout(r, 450));
+      showScreen(finalScreen);
+      makeHearts(18);
+    });
+
+    const plans = {
+      simple: {
+        price: 'S/ 235.00',
+        priceSize: '62px',
+        note: 'POR MES - CANCELA CUANDO QUIERAS',
+        oldText: 'MEJOR ESTA EL PLAN PREMIUM 😅🌟',
+        benefits: ['Lugar y hora coordinados', 'Conversación ilimitada', 'Postre incluido', 'Fotos bonitas']
+      },
+      premium: {
+        price: '1 abrazo, atención y cariño durante todo el viaje 🌟',
+        priceSize: 'clamp(28px, 7vw, 38px)',
+        note: 'Cancela cuando quieras 😄',
+        oldText: 'SE ACEPTAN MAS SI GUSTAS ✨🙈',
+        benefits: ['Lugar sorpresa ✨', 'Playlist personalizada 🎶', 'Postre compartido incluido 🍰', 'Cambio de plan sin reclamos 😅', 'Cena o almuerzo a elección 🍝', 'Segunda cita desbloqueable 💜', 'Atención exclusiva durante toda la cita 🌟']
+      }
+    };
+
+    document.querySelectorAll('.planBtn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.planBtn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const plan = plans[btn.dataset.plan];
+        document.getElementById('price').textContent = plan.price;
+        document.querySelector('.price').style.fontSize = plan.priceSize;
+        document.getElementById('priceNote').textContent = plan.note;
+        document.getElementById('oldPrice').textContent = plan.oldText;
+        document.getElementById('benefits').innerHTML = plan.benefits.map(x => `<li>${x}</li>`).join('');
+        document.getElementById('cardBrands').hidden = btn.dataset.plan === 'premium';
+        document.getElementById('cardForm').hidden = btn.dataset.plan === 'premium';
+        document.getElementById('premiumForm').hidden = btn.dataset.plan !== 'premium';
+        document.getElementById('confirmBtn').disabled = false;
+        document.getElementById('confirmBtn').textContent = 'Confirmar pago 💜';
+        document.getElementById('paymentStatus').textContent = '';
+        document.getElementById('paymentStatus').classList.remove('error');
+        document.querySelectorAll('.fake-input').forEach(input => input.classList.remove('invalid'));
+      });
+    });
+
+    document.getElementById('cardNumber').addEventListener('input', e => {
+      const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+      e.target.value = digits.replace(/(.{4})/g, '$1 ').trim();
+    });
+
+    document.getElementById('cardExpiry').addEventListener('input', e => {
+      const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+      e.target.value = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+    });
+
+    document.getElementById('cardCvc').addEventListener('input', e => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 3);
+    });
+
+    document.querySelectorAll('.fake-input').forEach(input => {
+      input.addEventListener('input', () => input.classList.remove('invalid'));
+      input.addEventListener('change', () => input.classList.remove('invalid'));
+    });
+
+    document.getElementById('confirmBtn').addEventListener('click', async () => {
+      const confirmBtn = document.getElementById('confirmBtn');
+      const paymentStatus = document.getElementById('paymentStatus');
+      const selectedPlan = document.querySelector('.planBtn.selected').dataset.plan;
+
+      if (selectedPlan === 'premium') {
+        const hugFields = [...document.querySelectorAll('#premiumForm select')];
+        const missingFields = hugFields.filter(field => !field.value.trim());
+
+        hugFields.forEach(field => field.classList.toggle('invalid', !field.value.trim()));
+        if (missingFields.length) {
+          paymentStatus.classList.add('error');
+          paymentStatus.textContent = 'LLene las opciones faltantes';
+          return;
+        }
+
+        paymentStatus.classList.remove('error');
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Pago en proceso...';
+        paymentStatus.textContent = '';
+        await new Promise(r => setTimeout(r, 1800));
+        confirmBtn.textContent = 'Pago verificado ✓';
+        paymentStatus.textContent = 'Felicidades, tu viaje premium ha sido reservado 💜';
+        makeHearts(32);
+        showCelebration('Felicidades, tu viaje premium ha sido reservado 💜', '🫂', 'premium');
+        return;
+      }
+
+      const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+      const expiry = document.getElementById('cardExpiry').value;
+      const cvc = document.getElementById('cardCvc').value;
+      const name = document.getElementById('cardName').value.trim().toLowerCase();
+
+      if (!cardNumber || !expiry || !cvc || !name) {
+        const fields = [
+          [document.getElementById('cardNumber'), cardNumber],
+          [document.getElementById('cardExpiry'), expiry],
+          [document.getElementById('cardCvc'), cvc],
+          [document.getElementById('cardName'), name]
+        ];
+        fields.forEach(([field, value]) => field.classList.toggle('invalid', !value));
+        paymentStatus.classList.add('error');
+        paymentStatus.textContent = 'LLene los datos faltantes';
+        return;
+      }
+
+      document.querySelectorAll('.fake-input').forEach(input => input.classList.remove('invalid'));
+      paymentStatus.classList.remove('error');
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Verificando pago...';
+      paymentStatus.textContent = '';
+
+      document.getElementById('cardNumber').value = '';
+      document.getElementById('cardExpiry').value = '';
+      document.getElementById('cardCvc').value = '';
+      document.getElementById('cardName').value = '';
+
+      await new Promise(r => setTimeout(r, 1800));
+
+      confirmBtn.textContent = 'Pago verificado ✓';
+      paymentStatus.textContent = 'Felicidades disfrute de su viaje';
+      makeHearts(32);
+      showCelebration('Felicidades disfrute de su viaje', '🎆', 'simple');
+    });
+
+    function showCelebration(message, icon, plan) {
+      const overlay = document.getElementById('celebrationOverlay');
+      const confettiLayer = document.getElementById('confettiLayer');
+      const shareWhatsApp = document.getElementById('shareWhatsApp');
+      const colors = ['#ff6fae', '#ffd166', '#8f7cff', '#56e39f', '#67c7ff'];
+      document.getElementById('celebrationMessage').textContent = message;
+      document.getElementById('celebrationIcon').textContent = icon;
+      confettiLayer.innerHTML = '';
+
+      if (plan === 'premium') {
+        const choices = [...document.querySelectorAll('#premiumForm .hug-option')]
+          .map(option => `${option.querySelector('span').textContent.trim()}: ${option.querySelector('select').value}`);
+        const otherPayment = document.getElementById('otherPayment').value.trim();
+        const summary = [
+          '✨ Elegí el Plan Premium ✨',
+          '',
+          ...choices,
+          ...(otherPayment ? [`Otra forma de pago: ${otherPayment}`] : []),
+          '',
+          '💜 Mi viaje premium ha sido reservado'
+        ].join('\n');
+        shareWhatsApp.href = 'https://wa.me/51993199219?text=' + encodeURIComponent(summary);
+        shareWhatsApp.textContent = 'Enviar elecciones por WhatsApp 💬';
+        shareWhatsApp.hidden = false;
+      } else {
+        const summary = [
+          '✨ Elegí el Plan Sencillo ✨',
+          '',
+          'Precio mostrado: S/ 235.00',
+          '💜 Mi viaje ha sido reservado'
+        ].join('\n');
+        shareWhatsApp.href = 'https://wa.me/51993199219?text=' + encodeURIComponent(summary);
+        shareWhatsApp.textContent = 'Enviar confirmación por WhatsApp 💬';
+        shareWhatsApp.hidden = false;
+      }
+
+      for (let i = 0; i < 34; i++) {
+        const piece = document.createElement('span');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[i % colors.length];
+        piece.style.animationDelay = Math.random() * 1.2 + 's';
+        piece.style.animationDuration = 2.2 + Math.random() * 1.5 + 's';
+        confettiLayer.appendChild(piece);
+      }
+
+      overlay.hidden = false;
+    }
+
+    document.getElementById('closeCelebration').addEventListener('click', () => {
+      document.getElementById('celebrationOverlay').hidden = true;
+      document.getElementById('confettiLayer').innerHTML = '';
+    });
+
+    function makeHearts(amount) {
+      const layer = document.getElementById('hearts');
+      for (let i = 0; i < amount; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'heart';
+        heart.textContent = ['💜','💗','✨','💖'][Math.floor(Math.random() * 4)];
+        heart.style.left = Math.random() * 100 + 'vw';
+        heart.style.animationDelay = Math.random() * 1.2 + 's';
+        heart.style.fontSize = 18 + Math.random() * 24 + 'px';
+        layer.appendChild(heart);
+        setTimeout(() => heart.remove(), 4200);
+      }
+    }
+  </script>
+</body>
+</html>
